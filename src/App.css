@@ -129,6 +129,8 @@ p {
 .message {
   display: flex;
   align-items: center;
+  height:auto;
+  word-wrap: break-word;
 }
 
 
