@@ -40,6 +40,7 @@ function SignIn() {
 
   const signInWithGoogle = () => {
     const provider = new firebase.auth.GoogleAuthProvider();
+    //when user clicks on the sign in button a new window will appear for google sign in
     auth.signInWithPopup(provider);
   }
 
@@ -53,6 +54,7 @@ function SignIn() {
 }
 
 function SignOut() {
+  //check if user is signed in, if they are, sign them out
   return auth.currentUser && (
     <button className="sign-out" onClick={() => auth.signOut()}>Sign Out</button>
   )
@@ -60,8 +62,10 @@ function SignOut() {
 
 
 function ChatRoom() {
+  //to help with auto scrolling
   const dummy = useRef();
   const messagesRef = firestore.collection('messages');
+  //here we render the latest 25 messages
   const query = messagesRef.orderBy('createdAt').limitToLast(25);
 
   const [messages] = useCollectionData(query, { idField: 'id' });
@@ -70,22 +74,25 @@ function ChatRoom() {
 
 
   const sendMessage = async (e) => {
+    //when a form is submitted it will refresh the page so we preventDefault() here
     e.preventDefault();
 
     const { uid, photoURL } = auth.currentUser;
-
+    
     await messagesRef.add({
       text: formValue,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       uid,
       photoURL
     })
-
+    //set the form value back to an empty string 
     setFormValue('');
+    //whenever a user sends a message it will auto scroll into view
     dummy.current.scrollIntoView({ behavior: 'smooth' });
   }
 
-  return (<>
+  return (
+  <>
     <main>
 
       {messages && messages.map(msg => <ChatMessage key={msg.id} message={msg} />)}
@@ -101,21 +108,26 @@ function ChatRoom() {
       <button type="submit" disabled={!formValue}>🕊️</button>
 
     </form>
-  </>)
+  </>
+  )
 }
 
 
 function ChatMessage(props) {
   const { text, uid, photoURL } = props.message;
 
+  //Here we do conditional CSS based on if the message is either sent(blue) or received(white)
   const messageClass = uid === auth.currentUser.uid ? 'sent' : 'received';
 
-  return (<>
+  return (
+  <>
+    {/* Here is where the conditional CSS happens */}
     <div className={`message ${messageClass}`}>
       <img src={photoURL || 'https://api.adorable.io/avatars/23/abott@adorable.png'} />
       <p>{text}</p>
     </div>
-  </>)
+  </>
+  )
 }
 
 
